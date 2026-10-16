@@ -38,7 +38,16 @@ int solve_phase_1(uint64_t challenge, char *out, size_t cap) {
 int solve_phase_2(uint64_t challenge, char *out, size_t cap) {
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
-    (void)challenge;
+    values[0] = (challenge >> 6) & 0x1f;
+    for (uint32_t i = 1; i < 6; i++)
+    {
+        uint32_t temp = challenge >> (20+4*(i-1));
+        temp = temp & 0x1f;
+        temp = temp + i;
+        temp = temp ^ values[i-1];
+        values[i] = temp + (temp << 1);
+    }
+    count = 6;
     // TODO: 根据 phase_02 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
