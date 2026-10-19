@@ -5,6 +5,13 @@
 
 #define MAX_FIELDS 8
 
+typedef struct ListNode
+{
+    struct ListNode *next;
+    uint32_t data1;
+    uint32_t data2;
+} ListNode;
+
 /*
  * 把 values 中的 count 个整数写成一行“空格分隔的无符号十进制整数”，存入 out。
  * 成功返回 0；count 为 0（还没有实现）、snprintf 出错或结果被截断时返回非零。
@@ -134,11 +141,79 @@ int solve_phase_4(uint64_t challenge, char *out, size_t cap)
     return write_answer(out, cap, values, count);
 }
 
+extern ListNode n_c00;
+extern ListNode n_b70;
+extern ListNode n_be0;
+extern ListNode n_bf0;
+extern ListNode n_b80;
+extern ListNode n_b90;
+extern ListNode n_ba0;
+extern ListNode n_bb0;
+extern ListNode n_bc0;
+extern ListNode n_bd0;
+extern ListNode n_b60;
+extern ListNode n_c10;
+
+ListNode n_b60 = {NULL,   0x0938, 0x9302};
+ListNode n_c10 = {&n_bc0, 0x0b39, 0x1ac6};
+ListNode n_be0 = {&n_b90, 0x084d, 0xa202};
+ListNode n_bf0 = {&n_ba0, 0x0224, 0xa3e1};
+ListNode n_b70 = {&n_be0, 0x047d, 0xc876};
+ListNode n_c00 = {&n_b70, 0x0733, 0x895b};
+ListNode n_b80 = {&n_bb0, 0x0561, 0x90b1};
+ListNode n_b90 = {&n_b80, 0x0043, 0x3ac6};
+ListNode n_ba0 = {&n_b60, 0x012a, 0xe557};
+ListNode n_bb0 = {&n_c10, 0x0607, 0xb61f};
+ListNode n_bc0 = {&n_bd0, 0x0317, 0x16d9};
+ListNode n_bd0 = {&n_bf0, 0x0a87, 0x1c2e};
+
+ListNode *g_list_array[8] = {
+    &n_c00,
+    &n_b70,
+    &n_be0,
+    &n_b90,
+    &n_b80,
+    &n_bb0,
+    &n_c10,
+    &n_bc0};
+
+uint32_t p5_traverse(uint64_t a, uint32_t *b)
+{
+    uint32_t index = a & 7;
+    ListNode *node = g_list_array[index];
+    uint32_t num = (uint32_t)(a >> 6) ^ (uint32_t)(a >> 32);
+    uint32_t count = (a >> 3) & 0x3;
+    uint32_t data1 = node->data1;
+    uint32_t temp = num ^ 0xd09d;
+    uint32_t ans = (temp << 1) + temp + node->data2;
+    *b = data1;
+    ans = ans ^ data1;
+    if (count == 0)
+    {
+        return ans;
+    }
+    uint32_t i = 1;
+    do
+    {
+        node = node -> next;
+        data1 = node -> data1;
+        ans = (ans << 1) + ans;
+        ans = ans + node -> data2;
+        ans = ans ^ data1;
+        *b = data1;
+        i++;
+    } while (i <= count);
+    return ans;
+}
+
 int solve_phase_5(uint64_t challenge, char *out, size_t cap)
 {
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
-    (void)challenge;
+    uint32_t out_value = 0;
+    values[0] = p5_traverse(challenge, &out_value);
+    values[1] = out_value;
+    count = 2;
     // TODO: 根据 phase_05 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
