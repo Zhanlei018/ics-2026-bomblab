@@ -218,11 +218,54 @@ int solve_phase_5(uint64_t challenge, char *out, size_t cap)
     return write_answer(out, cap, values, count);
 }
 
+typedef uint32_t (*op_func)(uint32_t);
+
+uint32_t p6_op_0(uint32_t key) {
+    return (key ^ 0x3ff6) + (key << 1);
+}
+
+uint32_t p6_op_1(uint32_t key) {
+    return (key + 0xfbff) ^ (key >> 5);
+}
+
+uint32_t p6_op_2(uint32_t key) {
+    return ((key >> 3) ^ key) + 0x3d2f;
+}
+
+uint32_t p6_op_3(uint32_t key) {
+    return ((key << 3) + 0x1602) ^ (key * 7);
+}
+
+uint32_t p6_op_4(uint32_t key) {
+    uint32_t rol_2 = (key << 2) | (key >> 30);
+    return rol_2 ^ 0xcd85;
+}
+
+uint32_t p6_op_5(uint32_t key) {
+    return (key >> 5) | (key << 27);
+}
+
+op_func p6_ops[8] = {
+    p6_op_5, p6_op_4, p6_op_1, p6_op_2, 
+    p6_op_5, p6_op_0, p6_op_3, p6_op_3
+};
+
+uint32_t p6_dispatch(uint64_t challenge){
+    uint32_t num1 = (uint32_t)(challenge >> 6) ^ (uint32_t)(challenge >> 32);
+    uint32_t index1 = challenge & 0x7;
+    uint32_t ans1 = p6_ops[index1](num1);
+    uint32_t num2 = ans1 ^ 0xe28a;
+    uint32_t index2 = (challenge >> 3) & 0x7;
+    uint32_t ans2 = p6_ops[index2](num2);
+    return ans2 + 0x5729;
+}
+
 int solve_phase_6(uint64_t challenge, char *out, size_t cap)
 {
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
-    (void)challenge;
+    values[0] = p6_dispatch(challenge);
+    count = 1;
     // TODO: 根据 phase_06 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
