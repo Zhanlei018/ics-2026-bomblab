@@ -9,42 +9,47 @@
  * 把 values 中的 count 个整数写成一行“空格分隔的无符号十进制整数”，存入 out。
  * 成功返回 0；count 为 0（还没有实现）、snprintf 出错或结果被截断时返回非零。
  */
-static int write_answer(char *out, size_t cap, const uint32_t *values, size_t count) {
+static int write_answer(char *out, size_t cap, const uint32_t *values, size_t count)
+{
     size_t used = 0;
-    for (size_t i = 0; i < count; ++i) {
+    for (size_t i = 0; i < count; ++i)
+    {
         int size = snprintf(out + used, cap - used, "%s%" PRIu32, i ? " " : "", values[i]);
-        if (size < 0 || (size_t)size >= cap - used) return 1;
+        if (size < 0 || (size_t)size >= cap - used)
+            return 1;
         used += (size_t)size;
     }
     return count == 0;
 }
 
-int solve_phase_1(uint64_t challenge, char *out, size_t cap) {
+int solve_phase_1(uint64_t challenge, char *out, size_t cap)
+{
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
     uint32_t low = (uint32_t)challenge;
     uint32_t high = (uint32_t)(challenge >> 32);
     uint32_t mid = (uint32_t)(challenge >> 16);
-    uint32_t res0 = low ^ (high + 0xc9a);       
-    uint32_t res1 = (high + (mid << 2)) ^ 0xb89c;           
+    uint32_t res0 = low ^ (high + 0xc9a);
+    uint32_t res1 = (high + (mid << 2)) ^ 0xb89c;
     uint32_t res2 = (res1 + (res1 << 1)) ^ (low + 0xe480);
-    uint32_t ans =  res2 ^ res0;    
+    uint32_t ans = res2 ^ res0;
     values[0] = ans;
     count = 1;
     // TODO: 根据 phase_01 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
-int solve_phase_2(uint64_t challenge, char *out, size_t cap) {
+int solve_phase_2(uint64_t challenge, char *out, size_t cap)
+{
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
     values[0] = (challenge >> 6) & 0x1f;
     for (uint32_t i = 1; i < 6; i++)
     {
-        uint32_t temp = challenge >> (20+4*(i-1));
+        uint32_t temp = challenge >> (20 + 4 * (i - 1));
         temp = temp & 0x1f;
         temp = temp + i;
-        temp = temp ^ values[i-1];
+        temp = temp ^ values[i - 1];
         values[i] = temp + (temp << 1);
     }
     count = 6;
@@ -52,7 +57,8 @@ int solve_phase_2(uint64_t challenge, char *out, size_t cap) {
     return write_answer(out, cap, values, count);
 }
 
-int solve_phase_3(uint64_t challenge, char *out, size_t cap) {
+int solve_phase_3(uint64_t challenge, char *out, size_t cap)
+{
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
     uint32_t index = (uint32_t)(challenge & 0x7);
@@ -93,15 +99,43 @@ int solve_phase_3(uint64_t challenge, char *out, size_t cap) {
     return write_answer(out, cap, values, count);
 }
 
-int solve_phase_4(uint64_t challenge, char *out, size_t cap) {
+uint32_t p4_walk(uint32_t a, uint32_t b, uint32_t c, uint32_t d)
+{
+    uint32_t average = b + ((c - b) >> 1);
+    if (average == a)
+    {
+        return (average + 0x75) ^ d;
+    }
+    uint32_t key = average + d;
+    if (a < average)
+    {
+        uint32_t ans = p4_walk(a, b, average - 1, d);
+        return (((ans << 2) + ans) ^ key) ^ 0x19;
+    }
+    else
+    {
+        uint32_t ans = p4_walk(a, average + 1, c, d);
+        return (((ans << 2) + ans) ^ key) ^ 0x16;
+    }
+}
+
+int solve_phase_4(uint64_t challenge, char *out, size_t cap)
+{
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
-    (void)challenge;
+    uint32_t r_number = challenge;
+    uint32_t zero = 0;
+    uint32_t c_number = 0x7f;
+    r_number = r_number & c_number;
+    uint32_t x_number = (challenge >> 7) ^ (challenge >> 32);
+    values[0] = p4_walk(r_number, zero, c_number, x_number);
+    count = 1;
     // TODO: 根据 phase_04 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
-int solve_phase_5(uint64_t challenge, char *out, size_t cap) {
+int solve_phase_5(uint64_t challenge, char *out, size_t cap)
+{
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
     (void)challenge;
@@ -109,7 +143,8 @@ int solve_phase_5(uint64_t challenge, char *out, size_t cap) {
     return write_answer(out, cap, values, count);
 }
 
-int solve_phase_6(uint64_t challenge, char *out, size_t cap) {
+int solve_phase_6(uint64_t challenge, char *out, size_t cap)
+{
     uint32_t values[MAX_FIELDS] = {0};
     size_t count = 0;
     (void)challenge;
@@ -117,7 +152,8 @@ int solve_phase_6(uint64_t challenge, char *out, size_t cap) {
     return write_answer(out, cap, values, count);
 }
 
-int solve_secret(uint64_t challenge, uint64_t context, char *out, size_t cap) {
+int solve_secret(uint64_t challenge, uint64_t context, char *out, size_t cap)
+{
     (void)challenge;
     (void)context;
     (void)out;
