@@ -42,7 +42,6 @@ int solve_phase_1(uint64_t challenge, char *out, size_t cap)
     uint32_t ans = res2 ^ res0;
     values[0] = ans;
     count = 1;
-    // TODO: 根据 phase_01 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
@@ -60,7 +59,6 @@ int solve_phase_2(uint64_t challenge, char *out, size_t cap)
         values[i] = temp + (temp << 1);
     }
     count = 6;
-    // TODO: 根据 phase_02 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
@@ -102,7 +100,6 @@ int solve_phase_3(uint64_t challenge, char *out, size_t cap)
     }
     values[0] = index;
     count = 2;
-    // TODO: 根据 phase_03 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
@@ -137,7 +134,6 @@ int solve_phase_4(uint64_t challenge, char *out, size_t cap)
     uint32_t x_number = (challenge >> 7) ^ (challenge >> 32);
     values[0] = p4_walk(r_number, zero, c_number, x_number);
     count = 1;
-    // TODO: 根据 phase_04 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
@@ -154,7 +150,7 @@ extern ListNode n_bd0;
 extern ListNode n_b60;
 extern ListNode n_c10;
 
-ListNode n_b60 = {NULL,   0x0938, 0x9302};
+ListNode n_b60 = {NULL, 0x0938, 0x9302};
 ListNode n_c10 = {&n_bc0, 0x0b39, 0x1ac6};
 ListNode n_be0 = {&n_b90, 0x084d, 0xa202};
 ListNode n_bf0 = {&n_ba0, 0x0224, 0xa3e1};
@@ -195,10 +191,10 @@ uint32_t p5_traverse(uint64_t a, uint32_t *b)
     uint32_t i = 1;
     do
     {
-        node = node -> next;
-        data1 = node -> data1;
+        node = node->next;
+        data1 = node->data1;
         ans = (ans << 1) + ans;
-        ans = ans + node -> data2;
+        ans = ans + node->data2;
         ans = ans ^ data1;
         *b = data1;
         i++;
@@ -214,43 +210,48 @@ int solve_phase_5(uint64_t challenge, char *out, size_t cap)
     values[0] = p5_traverse(challenge, &out_value);
     values[1] = out_value;
     count = 2;
-    // TODO: 根据 phase_05 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
 typedef uint32_t (*op_func)(uint32_t);
 
-uint32_t p6_op_0(uint32_t key) {
+uint32_t p6_op_0(uint32_t key)
+{
     return (key ^ 0x3ff6) + (key << 1);
 }
 
-uint32_t p6_op_1(uint32_t key) {
+uint32_t p6_op_1(uint32_t key)
+{
     return (key + 0xfbff) ^ (key >> 5);
 }
 
-uint32_t p6_op_2(uint32_t key) {
+uint32_t p6_op_2(uint32_t key)
+{
     return ((key >> 3) ^ key) + 0x3d2f;
 }
 
-uint32_t p6_op_3(uint32_t key) {
+uint32_t p6_op_3(uint32_t key)
+{
     return ((key << 3) + 0x1602) ^ (key * 7);
 }
 
-uint32_t p6_op_4(uint32_t key) {
+uint32_t p6_op_4(uint32_t key)
+{
     uint32_t rol_2 = (key << 2) | (key >> 30);
     return rol_2 ^ 0xcd85;
 }
 
-uint32_t p6_op_5(uint32_t key) {
+uint32_t p6_op_5(uint32_t key)
+{
     return (key >> 5) | (key << 27);
 }
 
 op_func p6_ops[8] = {
-    p6_op_5, p6_op_4, p6_op_1, p6_op_2, 
-    p6_op_5, p6_op_0, p6_op_3, p6_op_3
-};
+    p6_op_5, p6_op_4, p6_op_1, p6_op_2,
+    p6_op_5, p6_op_0, p6_op_3, p6_op_3};
 
-uint32_t p6_dispatch(uint64_t challenge){
+uint32_t p6_dispatch(uint64_t challenge)
+{
     uint32_t num1 = (uint32_t)(challenge >> 6) ^ (uint32_t)(challenge >> 32);
     uint32_t index1 = challenge & 0x7;
     uint32_t ans1 = p6_ops[index1](num1);
@@ -266,17 +267,21 @@ int solve_phase_6(uint64_t challenge, char *out, size_t cap)
     size_t count = 0;
     values[0] = p6_dispatch(challenge);
     count = 1;
-    // TODO: 根据 phase_06 的汇编，用 challenge 算出口令中的各个整数，依次存入 values，并把 count 改为整数个数。
     return write_answer(out, cap, values, count);
 }
 
+uint32_t secret_mix(uint32_t x) { return ((x >> 1) | (x << 31)) ^ 0x451u; }
+
 int solve_secret(uint64_t challenge, uint64_t context, char *out, size_t cap)
 {
-    (void)challenge;
-    (void)context;
-    (void)out;
-    (void)cap;
-    // TODO（选做）: 根据 secret_gate、secret_copy 和 secret_phase 的汇编构造完整的第七行，写入 out 后返回 0。
-    // 第七行不一定只有整数，可以直接用 snprintf 写入；还没完成时保持返回 1，测试会显示 not attempted。
-    return 1;
+    uint32_t a = (uint32_t)(context & 3u);
+    uint32_t x = (uint32_t)(challenge >> 32) ^ (uint32_t)challenge;
+    uint32_t y = (uint32_t)(context >> 32) ^ (uint32_t)context;
+    uint32_t b = (uint32_t)(0x7149u * a) ^ (uint32_t)(context >> 16);
+    uint32_t aa = secret_mix(x ^ y) ^ b;
+    uint32_t aaa = aa ^ ((uint32_t)(y + a + 0x7518u) + (x >> 1));
+    int n = snprintf(out, cap,
+                     "%016" PRIx64 "%016" PRIx64 "OPEN %" PRIu32 " %" PRIu32 " %" PRIu32,
+                     challenge, context, a, aa, aaa);
+    return n < 0 || (size_t)n >= cap;
 }
